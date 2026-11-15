@@ -13,7 +13,6 @@ lhosteFolder = fullfile(project,'DATASET - LHOSTE (2026)');
 resultsFolder = fullfile(folder,'results');
 cacheFolder = fullfile(resultsFolder,'cache');
 
-end
 if ~isfolder(cacheFolder)
     mkdir(cacheFolder);
 end
@@ -29,7 +28,7 @@ meanCurves = nan(101,3,4);    % Phase x condition x joint variable
 cycleCounts = zeros(3,1);
 subjectRows = cell(0,9);
 
-fprintf('\nEXPERIMENT F - BIOMECHANICAL WALKING COMPARISON\n');
+fprintf('\n BIOMECHANICAL WALKING COMPARISON\n');
 fprintf('Inputs: ORIGINAL Camargo and Lhoste datasets only.\n');
 
 %% 2. Camargo: read original marker events and inverse kinematics
@@ -187,6 +186,6 @@ close(gcf);
 % Separate within-subject SM vs Transparent comparison (original CSVs).
 eventAlignedAnalysis(lhosteFolder,resultsFolder);
 
-fprintf('\nFINISHED - EXPERIMENT F\n');
+fprintf('\nFINISHED\n');
 fprintf('Camargo: %d cycles | SM: %d | Transparent: %d\n',cycleCounts);
 fprintf('Saved 2 CSV files and 4 figures in:\n%s\n',resultsFolder);

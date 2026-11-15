@@ -1,4 +1,4 @@
-%% Experiment E - Personalized gait-phase calibration
+%% Personalized gait-phase calibration
 % Run this file only. All input data come from the original datasets.
 % Prepares the data, trains the phase model, and predicts controller events.
 
@@ -12,8 +12,6 @@ lhosteFolder = fullfile(project,'DATASET - LHOSTE (2026)');
 resultsFolder = fullfile(folder,'results');
 cacheFolder = fullfile(resultsFolder,'cache');
 
-if ~isfolder(camargoFolder) || ~isfolder(lhosteFolder)
-    error('Put Experiment_E beside the two original dataset folders.');
 end
 if ~isfolder(cacheFolder)
     mkdir(cacheFolder);
@@ -28,7 +26,7 @@ redoLhoste = false;             % Set true to repeat the Lhoste-only comparison
 Kvalues = [5 10];             % Calibration cycles per leg
 conditions = {'SM_WALKING','transparent_WALKING'};
 
-fprintf('\nEXPERIMENT E - DATA PREPARATION\n');
+fprintf('\n DATA PREPARATION\n');
 
 %% 2. Camargo: individual cycles and causal phase windows
 subjects = dir(fullfile(camargoFolder,'AB*'));
@@ -199,5 +197,5 @@ if runLhosteComparison
         redo || redoModel || redoPhase || redoLhoste || modelRebuilt); %#ok<ASGLU>
 end
 
-fprintf('Experiment E complete.\n');
+fprintf('Complete.\n');
 

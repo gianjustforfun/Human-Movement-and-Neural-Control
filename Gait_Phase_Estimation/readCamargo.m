@@ -38,8 +38,7 @@ for d = 1:length(sessions)
         R = load(rightFile,'data');
         markers = {L.data,R.data};
 
-        % E01 excludes trials with duplicated markers or no valid cycles
-        % for either leg.
+        % Exclude trials with duplicated markers or no valid cycles for either leg.
         if isequaln(L.data.ToeOff,R.data.ToeOff)
             continue;
         end
@@ -89,7 +88,7 @@ for d = 1:length(sessions)
             error('Invalid Camargo IK data: %s / %s',id,filename);
         end
 
-        % Five-sample backward difference, as in E02.
+        % Estimate angular velocities using a five-sample backward difference.
         vel = nan(size(angles));
         vel(6:end,:) = (angles(6:end,:)-angles(1:end-5,:)) ./ ...
             (t(6:end)-t(1:end-5));
@@ -132,7 +131,7 @@ for d = 1:length(sessions)
             end
         end
 
-        % E04 joins only adjacent accepted cycles from the same trial/leg.
+        % Join only adjacent accepted cycles from the same trial and leg.
         Xparts = cell(0,1);
         Pparts = cell(0,1);
         Tparts = cell(0,1);

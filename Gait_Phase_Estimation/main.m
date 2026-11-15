@@ -65,16 +65,16 @@ for s = 1:numel(subjects)
     clear trials cycleDurations
 end
 
-% E06 uses the median of all Camargo cycles, not subject medians.
+% Use the median duration across all Camargo cycles, not subject medians.
 camargoPeriod = median(camargoDurations);
 fprintf('Camargo: %d subjects, %d trials, %d cycles, %d windows\n', ...
     numel(subjects),camargoTrials,camargoCycles,camargoWindows);
 fprintf('Reference cycle duration: %.4f s\n\n',camargoPeriod);
 
-% These counts were obtained with the original E01-E04 processing.
+% Check Camargo subject, trial, cycle, and window counts for consistency.
 if numel(subjects)~=22 || camargoTrials~=680 || ...
         camargoCycles~=14942 || camargoWindows~=835934
-    error('Camargo counts differ from the verified E01-E04 results.');
+    error('Camargo preprocessing counts do not match the expected values.');
 end
 
 %% 3. Train and validate the Camargo phase model
@@ -165,7 +165,7 @@ for s = 1:numel(files)
 end
 
 if numel(files)~=19 || ~isequal(lhosteCounts,[1467;1497])
-    error('Lhoste counts differ from the verified E03 results.');
+    error('Lhoste gait-cycle counts do not match the expected values.');
 end
 
 calibrationSummary = cell2table(calibrationRows,'VariableNames', ...

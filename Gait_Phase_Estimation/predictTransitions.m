@@ -7,8 +7,8 @@ function [subjectTable,groupTable,ablationTable] = predictTransitions(cacheFolde
 conditions = {'SM_WALKING','transparent_WALKING'};
 subjects = sort(unique(string(calibrationSummary.Subject)));
 horizons = [0.100 0.200 0.300];
-methods = {'Original','TimeRescaled','E11_A_PhaseRate', ...
-    'E12_PhaseOnlyRidge','E11_B_KinematicRidge'};
+methods = {'Original','TimeRescaled','PhaseRate', ...
+    'PhaseTimingRidge','KinematicRidge'};
 Kvalues = [5 10 5 10];
 sets = {'post5','post10','post10_common','post10_common'};
 
@@ -21,11 +21,22 @@ if ~redoTransitions && all(cellfun(@isfile, ...
     subjectTable = readtable(subjectFile);
     groupTable = readtable(groupFile);
     ablationTable = readtable(ablationFile);
-    fprintf('\nUsing saved transition results. Set redoTransitions=true to rebuild.\n');
-    return;
+    expectedMethods = string(methods);
+    currentMethods = unique(string(subjectTable.Method));
+    groupMethods = unique(string(groupTable.Method));
+    currentColumns = string(ablationTable.Properties.VariableNames);
+    validCache = all(ismember(expectedMethods,currentMethods)) && ...
+        all(ismember(expectedMethods,groupMethods)) && ...
+        all(ismember(["PhaseTimingRidgeRecall_percent", ...
+            "KinematicRidgeRecall_percent"],currentColumns));
+    if validCache
+        fprintf('\nUsing saved transition results. Set redoTransitions=true to rebuild.\n');
+        return;
+    end
+    fprintf('\nSaved results use outdated labels. Recomputing transition results.\n');
 end
 
-fprintf('\nEXPERIMENT E - CONTROLLER TRANSITION PREDICTION\n');
+fprintf('\nPERSONALIZED CONTROLLER TRANSITION PREDICTION\n');
 rows = struct([]);
 trainingRows = cell(0,6);
 
@@ -102,7 +113,7 @@ for s = 1:numel(subjects)
             duration = double(cal.MedianDuration_s);
             remaining = {mod(threshold-phase0,1)*duration, ...
                 mod(threshold-phase1,1)*duration, ...
-                R.tteA,R.ttePhaseOnly,R.tteB};
+                R.ttePhaseRate,R.ttePhaseTimingRidge,R.tteKinematicRidge};
             refractory = max(0.300,0.50*duration);
             trueTTE = double(P.TO_reference_s(:))-double(P.time_s(:));
             near = trueTTE>=0.020 & trueTTE<=0.300;
@@ -207,7 +218,7 @@ for c = 1:2
     end
 end
 
-% E12 compares the two Ridge models on identical post10_common anchors.
+% Compare the phase-and-timing Ridge and kinematic Ridge on identical common anchors.
 ablationRows = struct([]);
 for c = 1:2
     for K = [5 10]
@@ -216,21 +227,21 @@ for c = 1:2
             subjectTable.EvaluationSet=="post10_common" & ...
             subjectTable.Horizon_ms==200;
         A = sortrows(subjectTable(use & ...
-            subjectTable.Method=="E12_PhaseOnlyRidge",:),'Subject');
+            subjectTable.Method=="PhaseTimingRidge",:),'Subject');
         B = sortrows(subjectTable(use & ...
-            subjectTable.Method=="E11_B_KinematicRidge",:),'Subject');
+            subjectTable.Method=="KinematicRidge",:),'Subject');
         if height(A)~=numel(subjects) || ~isequal(A.Subject,B.Subject) || ...
                 ~isequal(A.NAnchors,B.NAnchors) || ...
                 ~isequal(A.NReferenceEvents,B.NReferenceEvents)
-            error('Phase-only and full Ridge evaluations are not matched.');
+            error('Phase-timing and kinematic Ridge evaluations are not matched.');
         end
         delta = B.EventRecall_percent-A.EventRecall_percent;
         row = struct('Condition',string(conditions{c}), ...
             'CyclesPerLeg',K,'Horizon_ms',200, ...
             'Subjects',height(A), ...
             'ReferenceEvents',sum(A.NReferenceEvents), ...
-            'PhaseOnlyRecall_percent',mean(A.EventRecall_percent), ...
-            'FullKinematicRecall_percent',mean(B.EventRecall_percent), ...
+            'PhaseTimingRidgeRecall_percent',mean(A.EventRecall_percent), ...
+            'KinematicRidgeRecall_percent',mean(B.EventRecall_percent), ...
             'AddedKinematicsDeltaRecall_pp',mean(delta), ...
             'AddedKinematicsDeltaPrecision_pp', ...
             mean(B.Precision_percent-A.Precision_percent), ...
@@ -244,9 +255,9 @@ for c = 1:2
         else
             ablationRows(end+1,1) = row; %#ok<AGROW>
         end
-        fprintf('%-20s K=%2d H200 | phase-only %.2f%%, full %.2f%%, ', ...
-            conditions{c},K,row.PhaseOnlyRecall_percent, ...
-            row.FullKinematicRecall_percent);
+        fprintf('%-20s K=%2d H200 | phase-timing Ridge %.2f%%, kinematic Ridge %.2f%%, ', ...
+            conditions{c},K,row.PhaseTimingRidgeRecall_percent, ...
+            row.KinematicRidgeRecall_percent);
         fprintf('delta recall %+.2f pp, delta FA/min %+.2f\n', ...
             row.AddedKinematicsDeltaRecall_pp, ...
             row.AddedKinematicsDeltaFalseAlarms_perMin);
@@ -380,8 +391,8 @@ F.nEvents = numel(unique(allKeys));
 F.nLegs = numel(unique(legs));
 F.nCandidateAnchors = nCandidates;
 F.maxTTEForTraining_s = 1.0;
-F.full = fitRidge(XX,YY,2.0);
-F.phaseOnly = fitRidge(XX(:,1:3),YY,2.0);
+F.kinematicRidge = fitRidge(XX,YY,2.0);
+F.phaseTimingRidge = fitRidge(XX(:,1:3),YY,2.0);
 end
 
 function M = fitRidge(X,y,lambda)
@@ -436,8 +447,8 @@ end
 function R = predictTime(P,runs,cal,F)
 % Apply both personalized models without using future controller labels.
 n = numel(P.key);
-R = struct('key',P.key,'tteA',zeros(n,1), ...
-    'ttePhaseOnly',zeros(n,1),'tteB',zeros(n,1));
+R = struct('key',P.key,'ttePhaseRate',zeros(n,1), ...
+    'ttePhaseTimingRidge',zeros(n,1),'tteKinematicRidge',zeros(n,1));
 runIds = unique(double(P.runIndex(:)),'stable');
 for r = 1:numel(runIds)
     rr = runIds(r);
@@ -456,11 +467,11 @@ for r = 1:numel(runIds)
     kin = double(runs(rr).kinematics(samples,:));
     features = [a,distance,rate,kin];
 
-    z7 = (features-F.full.xMean)./F.full.xStd;
-    correction7 = F.full.yMean+z7*F.full.coeff;
+    z7 = (features-F.kinematicRidge.xMean)./F.kinematicRidge.xStd;
+    correction7 = F.kinematicRidge.yMean+z7*F.kinematicRidge.coeff;
     correction7 = max(-0.35,min(0.35,correction7));
-    z3 = (features(:,1:3)-F.phaseOnly.xMean)./F.phaseOnly.xStd;
-    correction3 = F.phaseOnly.yMean+z3*F.phaseOnly.coeff;
+    z3 = (features(:,1:3)-F.phaseTimingRidge.xMean)./F.phaseTimingRidge.xStd;
+    correction3 = F.phaseTimingRidge.yMean+z3*F.phaseTimingRidge.coeff;
     correction3 = max(-0.35,min(0.35,correction3));
 
     b = a;
@@ -468,9 +479,9 @@ for r = 1:numel(runIds)
     eligible = a<=F.maxTTEForTraining_s;
     b(eligible) = max(0,min(8.0,a(eligible)+correction7(eligible)));
     p(eligible) = max(0,min(8.0,a(eligible)+correction3(eligible)));
-    R.tteA(index) = a;
-    R.ttePhaseOnly(index) = p;
-    R.tteB(index) = b;
+    R.ttePhaseRate(index) = a;
+    R.ttePhaseTimingRidge(index) = p;
+    R.tteKinematicRidge(index) = b;
 end
 end
 

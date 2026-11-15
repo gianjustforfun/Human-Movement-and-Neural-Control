@@ -1,0 +1,11 @@
+# Original datasets
+DATASET - CAMARGO (2021)/
+DATASET - LHOSTE (2026)/
+
+# MATLAB intermediate data
+**/results/cache/
+**/results/*.mat
+*.asv
+
+# macOS
+.DS_Store

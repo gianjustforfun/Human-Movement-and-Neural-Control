@@ -12,7 +12,6 @@ lhosteFolder = fullfile(project,'DATASET - LHOSTE (2026)');
 resultsFolder = fullfile(folder,'results');
 cacheFolder = fullfile(resultsFolder,'cache');
 
-end
 if ~isfolder(cacheFolder)
     mkdir(cacheFolder);
 end

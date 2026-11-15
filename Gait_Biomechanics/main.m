@@ -1,4 +1,4 @@
-%% Experiment F - Biomechanical comparison of walking conditions
+%% Biomechanical comparison of walking conditions
 % Camargo natural walking vs Lhoste SM and Transparent walking.
 % Run this file only. The two functions read the ORIGINAL datasets.
 % Each subject contributes equally to the group averages.
@@ -13,8 +13,6 @@ lhosteFolder = fullfile(project,'DATASET - LHOSTE (2026)');
 resultsFolder = fullfile(folder,'results');
 cacheFolder = fullfile(resultsFolder,'cache');
 
-if ~isfolder(camargoFolder) || ~isfolder(lhosteFolder)
-    error('Put Experiment_F beside the two original dataset folders.');
 end
 if ~isfolder(cacheFolder)
     mkdir(cacheFolder);

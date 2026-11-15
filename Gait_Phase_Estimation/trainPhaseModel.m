@@ -14,7 +14,7 @@ last500 = 26:51;
 featureSets = {[last500 last500+51 last500+102 last500+153],1:204};
 maxPerTrial = 180;
 
-fprintf('\nEXPERIMENT E - CAMARGO PHASE MODEL\n');
+fprintf('\nCAMARGO PHASE MODEL\n');
 fprintf('Training subjects: %s\n',strjoin(cellstr(trainingSubjects),', '));
 fprintf('Validation subjects: %s\n',strjoin(cellstr(validationSubjects),', '));
 

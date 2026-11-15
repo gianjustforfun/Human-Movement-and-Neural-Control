@@ -26,7 +26,7 @@ if ~redoLhoste && isfile(modelFile) && isfile(subjectFile) && ...
     return;
 end
 
-fprintf('\nEXPERIMENT E - LHOSTE-ONLY PHASE COMPARISON\n');
+fprintf('\nLHOSTE-ONLY PHASE COMPARISON\n');
 fprintf('Training subjects: %s\n',strjoin(cellstr(trainingSubjects),', '));
 fprintf('Test subjects: %s\n',strjoin(cellstr(testSubjects),', '));
 
@@ -135,7 +135,7 @@ for s = 1:numel(testSubjects)
         P = A.protocols(1).predictions;
         prediction = nan(numel(P.key),1);
 
-        % Recover the same past/current kinematics used by E07 Original.
+        % Recover the past/current kinematics from uncalibrated phase evaluation.
         for r = 1:numel(runs)
             rowIDs = find(double(P.runIndex)==r);
             if isempty(rowIDs)

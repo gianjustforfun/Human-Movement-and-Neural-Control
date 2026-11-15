@@ -43,7 +43,7 @@ for s = 1:numel(subjects)
         nTrials = nTrials+1;
         nWindows = nWindows+n;
 
-        % E05 uses up to 180 equally spaced windows from each trial.
+        % Sample up to 180 equally spaced feature windows from each trial.
         idx = unique(round(linspace(1,n,min(n,maxPerTrial))));
         X = double(trials(f).X(idx,:));
         phi = mod(double(trials(f).phase(idx)),1);
@@ -79,7 +79,7 @@ for s = 1:numel(subjects)
 end
 
 if numel(subjects)~=22 || nTrials~=680 || nWindows~=835934
-    error('Camargo training data differ from the verified E04 counts.');
+    error('Camargo training data do not match the expected preprocessing counts.');
 end
 
 %% 3. Fit the eight models using training subjects only

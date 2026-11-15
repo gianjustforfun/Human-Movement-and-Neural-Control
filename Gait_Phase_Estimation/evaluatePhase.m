@@ -15,7 +15,7 @@ if ~isfolder(phaseFolder)
     mkdir(phaseFolder);
 end
 
-fprintf('\nEXPERIMENT E - LHOSTE PHASE EVALUATION\n');
+fprintf('\nLHOSTE GAIT PHASE EVALUATION\n');
 rows = cell(0,13);
 
 %% 2. Evaluate each subject and walking condition

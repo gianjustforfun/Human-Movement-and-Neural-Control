@@ -44,7 +44,7 @@ for d = 1:length(sessions)
         angles = [double(ik.hip_flexion_l(:)),double(ik.knee_angle_l(:)), ...
                   double(ik.hip_flexion_r(:)),double(ik.knee_angle_r(:))];
 
-        % Five-sample backward difference (the same as Experiment E).
+        % Compute angular velocities using a five-sample backward difference.
         lag = 5;
         vel = nan(size(angles));
         vel(lag+1:end,:) = (angles(lag+1:end,:) - angles(1:end-lag,:)) ./ ...

@@ -112,7 +112,7 @@ for seg = 1:numel(starts)
     end
 end
 
-% E06 orders cycles by segment, event time, and leg, not raw time alone.
+% Order cycles by segment, event time, and leg to preserve recording chronology.
 ordered = cycles([]);
 runs = struct('condition',{},'leg',{},'segmentIndex',{}, ...
     'segmentFirstRawRow',{},'time_s',{},'kinematics',{},'phase_reference_only',{}, ...
